@@ -57,6 +57,7 @@ exclude = '''
     | \.venv
     | \bdist\b
     | \bdoc\b
+    | \bfaiss\b
 )
 '''
 
@@ -83,6 +84,7 @@ warn_return_any = false
 warn_unreachable = true
 show_error_codes = true
 pretty = true
+exclude = 'faiss'
 
 [tool.mypy-tests]
 strict_optional = false
@@ -93,3 +95,4 @@ per-file-ignores = [
     '*.pyi:E302,E305',
     '*.py:E203'
 ]
+exclude = 'faiss'

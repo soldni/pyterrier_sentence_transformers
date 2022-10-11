@@ -1,25 +1,48 @@
 import unittest
 import pandas as pd
 import tempfile
+
+
 class TestIndexing(unittest.TestCase):
-
-    def test_indexing_1doc_torch(self):
+    def test_indexing_one_doc(self):
         import pyterrier as pt
-        from pyterrier_ance import ANCEIndexer, ANCERetrieval
-        checkpoint="https://webdatamltrainingdiag842.blob.core.windows.net/semistructstore/OpenSource/Passage_ANCE_FirstP_Checkpoint.zip"
-        #checkpoint="/Users/craigmacdonald/git/pyterrier_ance/ance_checkpoint.zip"
-        import os
-        os.rmdir(self.test_dir)
-        indexer = ANCEIndexer(
-            checkpoint, 
-            os.path.join(self.test_dir, "index"), 
-            num_docs=200
-            )
+        from pyterrier_sentence_transformers import SentenceTransformersIndexer
 
-        iter = pt.get_dataset("vaswani").get_corpus_iter()
+        self.tearDown()
+        self.setUp()
+
+        indexer = SentenceTransformersIndexer(
+            model_name_or_path="all-MiniLM-L6-v2",
+            index_path=self.test_dir
+        )
+        df = pd.DataFrame({"docno": [1], "text": ["This is a test"]})
+        indexref = indexer.index(df)
+        index = pt.IndexFactory.of(indexref)
+        assert index.getCollectionStatistics().getNumberOfDocuments() == 1
+
+    def test_indexing_vaswani(self):
+
+        from pyterrier.datasets import get_dataset
+        from pyterrier_sentence_transformers import (
+            SentenceTransformersIndexer,
+            SentenceTransformersRetrieval
+        )
+
+        self.tearDown()
+        self.setUp()
+
+        indexer = SentenceTransformersIndexer(
+            model_name_or_path="all-MiniLM-L6-v2",
+            index_path=self.test_dir
+        )
+
+        iter = get_dataset("vaswani").get_corpus_iter()
         ref = indexer.index([ next(iter) for i in range(200) ])
-        ret = ANCERetrieval(checkpoint, ref)
-       
+        ret = SentenceTransformersRetrieval(
+            model_name_or_path="all-MiniLM-L6-v2",
+            indexref=ref
+        )
+
         dfOut = ret.search("chemical reactions")
         self.assertTrue(len(dfOut) > 0)
 
