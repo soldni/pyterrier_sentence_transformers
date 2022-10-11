@@ -1,19 +1,16 @@
 import os
 import pickle
 from dataclasses import asdict, dataclass
-from typing import Optional, Union
+from typing import Generator, Iterable, Optional, Union
 
 import numpy as np
 import pandas as pd
 import pyterrier as pt
 import torch
-from pyterrier.datasets import Dataset
-from pyterrier.model import add_ranks
 from pyterrier.transformer import TransformerBase
 from sentence_transformers import SentenceTransformer
 
 from necessary import necessary
-
 
 with necessary(
     modules="faiss",
@@ -81,7 +78,7 @@ class SentenceTransformersIndexer(TransformerBase):
             device=config.device
         )
 
-    def index(self, generator):
+    def index(self, docs_it: Iterable[pd.DataFrame]):
         # from ance.utils.util import pad_input_ids
         # import torch
         # import more_itertools
@@ -124,11 +121,11 @@ class SentenceTransformersIndexer(TransformerBase):
             if self.config.num_docs is not None:
                 tqdm_kwargs['total'] = self.config.num_docs
 
-            generator = pt.tqdm(
-                generator, desc="Indexing", unit="d", **tqdm_kwargs
+            docs_it = pt.tqdm(
+                docs_it, desc="Indexing", unit="d", **tqdm_kwargs
             )
 
-        for doc in generator:
+        for doc in docs_it:
             contents = doc[self.config.text_attr]
 
             docid2docno.append(doc["docno"])
