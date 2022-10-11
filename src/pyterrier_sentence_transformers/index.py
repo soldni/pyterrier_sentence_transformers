@@ -51,6 +51,7 @@ class FaissIndex(object):
                 faiss.METRIC_INNER_PRODUCT  # pyright: ignore
             )
         else:
+            # self.index = faiss.IndexFlatL2(vector_sz)
             self.index = faiss.IndexFlatIP(vector_sz)   # pyright: ignore
 
         self.index_id_to_db_id: List[Any] = []
