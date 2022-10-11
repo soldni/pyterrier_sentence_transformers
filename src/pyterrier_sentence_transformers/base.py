@@ -30,11 +30,9 @@ class SentenceTransformerConfig:
     per_gpu_eval_batch_size: int = 128
     per_call_size: int = 1_024
     num_results: int = 1000
-    # faiss_n_subquantizers: int = 0
     normalize: bool = True
-    # faiss_n_bits: int = 8
-    factory_config: str = 'Flat'
-    factory_metric: str = 'METRIC_INNER_PRODUCT'
+    faiss_factory_config: str = 'Flat'
+    faiss_factory_metric: str = 'METRIC_INNER_PRODUCT'
     n_gpu: int = torch.cuda.device_count()
 
     @property
@@ -135,8 +133,8 @@ class SentenceTransformersBase(TransformerBase):
         # then written to disk
         index = FaissIndex(
             vector_sz=embedding_size,
-            factory_config=self.config.factory_config,
-            factory_metric=self.config.factory_metric,
+            factory_config=self.config.faiss_factory_config,
+            factory_metric=self.config.faiss_factory_metric,
         )
 
         return index
