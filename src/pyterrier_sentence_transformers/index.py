@@ -67,10 +67,11 @@ class FaissIndex(object):
     def index_data(self, ids: List[Any], embeddings: np.ndarray):
         self._update_id_mapping(ids)
         embeddings = embeddings.astype('float32')
+
         if not self.index.is_trained:
             self.index.train(embeddings)
-        else:
-            self.index.add(embeddings)
+
+        self.index.add(embeddings)
 
         print(f'Total data indexed {len(self.index_id_to_db_id)}')
 
