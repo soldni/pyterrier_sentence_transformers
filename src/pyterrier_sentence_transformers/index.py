@@ -12,10 +12,11 @@ GitHub: @soldni
 Email:  lucas@allenai.org
 '''
 
+from enum import Enum
 from multiprocessing import cpu_count
 import os
 import pickle
-from typing import Any, List, Tuple
+from typing import Any, List, Tuple, Union
 
 from necessary import necessary
 import numpy as np
@@ -33,26 +34,27 @@ with necessary(
     import faiss
 
 
+class FaissMetric(Enum):
+    METRIC_INNER_PRODUCT = faiss.METRIC_INNER_PRODUCT   # pyright: ignore
+    METRIC_L2 = faiss.METRIC_L2                         # pyright: ignore
+
+
 class FaissIndex(object):
     def __init__(
         self,
         vector_sz: int,
-        n_subquantizers: int = 0,
-        n_bits: int = 8,
-        n_threads: int = cpu_count() // 2
+        factory_config: str = 'Flat',
+        factory_metric: Union[FaissMetric, str] = 'METRIC_INNER_PRODUCT',
+        n_threads: int = cpu_count() // 2,
     ):
+        if isinstance(factory_metric, str):
+            factory_metric = FaissMetric[factory_metric]
+
         faiss.omp_set_num_threads(n_threads)    # pyright: ignore
 
-        if n_subquantizers > 0:
-            self.index = faiss.IndexPQ(     # pyright: ignore
-                vector_sz,
-                n_subquantizers,
-                n_bits,
-                faiss.METRIC_INNER_PRODUCT  # pyright: ignore
-            )
-        else:
-            # self.index = faiss.IndexFlatL2(vector_sz)
-            self.index = faiss.IndexFlatIP(vector_sz)   # pyright: ignore
+        self.index = faiss.index_factory(       # pyright: ignore
+            vector_sz, factory_config, factory_metric.value
+        )
 
         self.index_id_to_db_id: List[Any] = []
 

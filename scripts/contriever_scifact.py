@@ -1,4 +1,5 @@
 from pathlib import Path
+from typing import Optional
 import platformdirs
 import pyterrier as pt
 
@@ -7,15 +8,25 @@ if not pt.started():
 
 from pyterrier_sentence_transformers import (
     SentenceTransformersRetriever,
-    SentenceTransformersIndexer
+    SentenceTransformersIndexer,
+    SentenceTransformerConfig
 )
+
+import springs as sp
 
 DATASET = 'beir/scifact/test'
 NEU_MODEL_NAME = 'facebook/contriever-msmarco'
 STA_MODEL_NAME = 'BM25'
 
 
-def main():
+@sp.dataclass
+class SentenceTransformerConfigWithDefaults(SentenceTransformerConfig):
+    model_name_or_path: Optional[str] = None    # type: ignore
+    index_path: Optional[str] = None            # type: ignore
+
+
+@sp.cli(SentenceTransformerConfigWithDefaults)
+def main(config: SentenceTransformerConfigWithDefaults):
     dataset = pt.get_dataset(f'irds:{DATASET}')
     index_root = Path(
         platformdirs.user_cache_dir('pyterrier_sentence_transformers')
@@ -29,6 +40,7 @@ def main():
         index_path=str(neu_index_path),
         overwrite=True,
         normalize=False,
+        config=sp.to_dict(config)
     )
     indexer.index(dataset.get_corpus_iter())
 

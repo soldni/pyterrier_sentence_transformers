@@ -10,6 +10,7 @@ from pyterrier.transformer import TransformerBase
 from sentence_transformers import SentenceTransformer
 
 import torch
+from .index import FaissIndex
 
 
 @dataclass
@@ -25,14 +26,15 @@ class SentenceTransformerConfig:
     docno_attr: str = "docno"
     query_attr: str = "query"
     device: str = 'cuda' if torch.cuda.is_available() else 'cpu'
-    max_query_length: Optional[int] = None
-    max_doc_length: Optional[int] = None
+    max_length: Optional[int] = None
     per_gpu_eval_batch_size: int = 128
     per_call_size: int = 1_024
     num_results: int = 1000
-    faiss_n_subquantizers: int = 0
+    # faiss_n_subquantizers: int = 0
     normalize: bool = True
-    faiss_n_bits: int = 8
+    # faiss_n_bits: int = 8
+    factory_config: str = 'Flat'
+    factory_metric: str = 'METRIC_INNER_PRODUCT'
     n_gpu: int = torch.cuda.device_count()
 
     @property
@@ -116,9 +118,28 @@ class SentenceTransformersBase(TransformerBase):
             model_name_or_path=self.config.model_name_or_path,
             device=self.config.device,
         )
-        if self.config.max_doc_length:
-            model.max_seq_length = self.config.max_doc_length
+        if self.config.max_length:
+            model.max_seq_length = self.config.max_length
         return model
+
+    @cached_property
+    def faiss_index(self) -> FaissIndex:
+
+        embedding_size = self.model.get_sentence_embedding_dimension()
+        assert isinstance(embedding_size, int), (
+            f"get_sentence_embedding_dimension returned {embedding_size}, "
+            f"which is of type {type(embedding_size)}, not int."
+        )
+
+        # make the index here; it will be index in memory first, and
+        # then written to disk
+        index = FaissIndex(
+            vector_sz=embedding_size,
+            factory_config=self.config.factory_config,
+            factory_metric=self.config.factory_metric,
+        )
+
+        return index
 
     def encode(self, texts: List[str]) -> np.ndarray:
         """Encode the given texts using the model."""

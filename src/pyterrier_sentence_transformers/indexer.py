@@ -6,7 +6,6 @@ import more_itertools
 import pandas as pd
 from trouting import trouting
 
-from .index import FaissIndex
 from .base import SentenceTransformersBase
 
 from pyterrier.datasets import GeneratorLen
@@ -52,31 +51,17 @@ class SentenceTransformersIndexer(SentenceTransformersBase):
         # and maybe in the future to shard the index across multiple files
         docs_it = self.make_segments(docs)
 
-        embedding_size = self.model.get_sentence_embedding_dimension()
-        assert isinstance(embedding_size, int), (
-            f"get_sentence_embedding_dimension returned {embedding_size}, "
-            f"which is of type {type(embedding_size)}, not int."
-        )
-
-        # make the index here; it will be index in memory first, and
-        # then written to disk
-        index = FaissIndex(
-            vector_sz=embedding_size,
-            n_bits=self.config.faiss_n_bits,
-            n_subquantizers=self.config.faiss_n_subquantizers,
-        )
-
         for _, contents in enumerate(docs_it):
             passage_embedding = self.encode(
                 texts=contents[self.config.text_attr].to_list(),
             )
 
-            index.index_data(
+            self.faiss_index.index_data(
                 ids=[str(e) for e in contents[self.config.docno_attr]],
                 embeddings=passage_embedding
             )
             # update progress bar
             pbar.update(passage_embedding.shape[0])
 
-        index.serialize(self.config.faiss_index_path)
+        self.faiss_index.serialize(self.config.faiss_index_path)
         return self.config.index_path

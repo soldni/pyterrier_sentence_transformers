@@ -1,6 +1,6 @@
 [project]
 name = "pyterrier_sentence_transformers"
-version = "0.1.0"
+version = "0.1.1"
 description = "Create an pyterrier index using any sentence-transformers model"
 authors = [
     {name = "Luca Soldaini", email = "luca@soldaini.net" },
