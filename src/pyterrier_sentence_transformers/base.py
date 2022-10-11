@@ -1,8 +1,11 @@
 from functools import cached_property
+import hashlib
+import json
+import numpy as np
 import pyterrier as pt
 from dataclasses import dataclass, asdict
 from pathlib import Path
-from typing import Any, Dict, Optional, Type, Union, cast
+from typing import Any, Dict, List, Optional, Type, Union, cast
 from pyterrier.transformer import TransformerBase
 from sentence_transformers import SentenceTransformer
 
@@ -13,6 +16,7 @@ import torch
 class SentenceTransformerConfig:
     model_name_or_path: str
     index_path: str
+    overwrite: bool = False
     verbose: bool = False
     num_docs: Optional[int] = None
     local_rank: int = -1
@@ -27,6 +31,7 @@ class SentenceTransformerConfig:
     per_call_size: int = 1_024
     num_results: int = 1000
     faiss_n_subquantizers: int = 0
+    normalize: bool = True
     faiss_n_bits: int = 8
     n_gpu: int = torch.cuda.device_count()
 
@@ -76,6 +81,16 @@ class SentenceTransformersBase(TransformerBase):
         super().__init__()
         self.config = SentenceTransformerConfig.from_dict(config, kwargs)
 
+    def __str__(self):
+        h = hashlib.sha1()
+        h.update(
+            json.dumps(asdict(self.config), sort_keys=True).encode('utf-8')
+        )
+        return (
+            f"{self.__class__.__name__}"
+            f"({self.config.model_name_or_path},{h.hexdigest()[:8]})"
+        )
+
     def __getstate__(self) -> dict:
         """Return the state of the object for pickling, minus
         any cached properties value, which might not be serializable
@@ -104,6 +119,18 @@ class SentenceTransformersBase(TransformerBase):
         if self.config.max_doc_length:
             model.max_seq_length = self.config.max_doc_length
         return model
+
+    def encode(self, texts: List[str]) -> np.ndarray:
+        """Encode the given texts using the model."""
+
+        out = self.model.encode(
+            texts,
+            batch_size=self.config.per_gpu_eval_batch_size,
+            convert_to_tensor=False,
+            convert_to_numpy=True,
+            normalize_embeddings=self.config.normalize
+        )
+        return cast(np.ndarray, out)
 
     def get_pbar(self, obj_to_iterate: Any, desc: str, unit: str) -> pt.tqdm:
         """Get a progress bar for the given object to iterate over."""

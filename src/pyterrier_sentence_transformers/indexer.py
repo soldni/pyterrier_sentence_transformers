@@ -1,15 +1,15 @@
 from pathlib import Path
-from typing import Any, Iterable, cast
+import shutil
+from typing import Any, Iterable
 import more_itertools
-import numpy as np
 
 import pandas as pd
-
 from trouting import trouting
 
 from .index import FaissIndex
 from .base import SentenceTransformersBase
 
+from pyterrier.datasets import GeneratorLen
 
 GeneratorType = type((i for i in range(10)))
 
@@ -22,7 +22,7 @@ class SentenceTransformersIndexer(SentenceTransformersBase):
             f"Cannot make segments from object of type {type(docs)}."
         )
 
-    @make_segments.add_interface(docs=(list, GeneratorType))
+    @make_segments.add_interface(docs=(list, GeneratorType, GeneratorLen))
     def _make_segments_from_iterable(
         self, docs: Iterable[dict]
     ) -> Iterable[pd.DataFrame]:
@@ -40,7 +40,10 @@ class SentenceTransformersIndexer(SentenceTransformersBase):
 
     def index(self, docs):
         # make sure input path exists
-        Path(self.config.index_path).mkdir(parents=True, exist_ok=True)
+        path = Path(self.config.index_path)
+        if not path.exists() or self.config.overwrite:
+            shutil.rmtree(path, ignore_errors=True)
+            path.mkdir(parents=True, exist_ok=True)
 
         # get a nice progress bar to show user how indexing is going
         pbar = self.get_pbar(docs, desc="Indexing", unit="docs")
@@ -64,15 +67,9 @@ class SentenceTransformersIndexer(SentenceTransformersBase):
         )
 
         for _, contents in enumerate(docs_it):
-            passage_embedding = self.model.encode(
-                contents[self.config.text_attr].to_list(),
-                batch_size=self.config.per_gpu_eval_batch_size,
-                show_progress_bar=self.config.verbose,
-                convert_to_tensor=False,
-                convert_to_numpy=True,
-                normalize_embeddings=True,
+            passage_embedding = self.encode(
+                texts=contents[self.config.text_attr].to_list(),
             )
-            passage_embedding = cast(np.ndarray, passage_embedding)
 
             index.index_data(
                 ids=[str(e) for e in contents[self.config.docno_attr]],
