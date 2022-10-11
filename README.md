@@ -24,15 +24,13 @@ If you need to install faiss from scratch, see [instructions here][1].
 
 See example in `scripts/contriever_scifact.py`.
 
-**Note**: I can't quite manage to reproduce the results from [Table 2][2] on the paper, but I'm not sure if it's due to the codebase or the model. I'm still investigating.
-
 ```bash
-                  name       map  recip_rank      P.10  ndcg_cut.10
-0                 BM25  0.626997    0.636829  0.090333     0.672167
-1   contriever-msmarco  0.619778    0.631274  0.087667     0.655547
+                          name       map  recip_rank      P.10  ndcg_cut.10
+0                         BM25  0.637799    0.647941  0.091667     0.683904
+1  facebook/contriever-msmarco  0.641346    0.653874  0.091667     0.682851
 ```
 
-nDCG@10 should be `66.5` on row 0, and row 1 should be `67.7`.
+Note that the nDCG@10 we get for BM25 is much better than in the [paper][2]: instead of `66.5` on row 0, we get '68.4'. The contriever result is also a bit better, with `68.3` instead of `67.7`. Not sure what kind of magic pyterrier is doing here 🤷.
 
 
 [1]: https://github.com/facebookresearch/faiss/blob/main/INSTALL.md

@@ -3,7 +3,7 @@ import hashlib
 import json
 import numpy as np
 import pyterrier as pt
-from dataclasses import dataclass, asdict
+from dataclasses import dataclass, asdict, field
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Type, Union, cast
 from pyterrier.transformer import TransformerBase
@@ -22,7 +22,7 @@ class SentenceTransformerConfig:
     num_docs: Optional[int] = None
     local_rank: int = -1
     cache_dir: Optional[str] = None
-    text_attr: str = "text"
+    text_attr: List[str] = field(default_factory=lambda: ["text"])
     docno_attr: str = "docno"
     query_attr: str = "query"
     device: str = 'cuda' if torch.cuda.is_available() else 'cpu'

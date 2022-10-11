@@ -37,6 +37,12 @@ with necessary(
 class FaissMetric(Enum):
     METRIC_INNER_PRODUCT = faiss.METRIC_INNER_PRODUCT   # pyright: ignore
     METRIC_L2 = faiss.METRIC_L2                         # pyright: ignore
+    METRIC_L1 = faiss.METRIC_L1                         # pyright: ignore
+    METRIC_Linf = faiss.METRIC_Linf                     # pyright: ignore
+    METRIC_Lp = faiss.METRIC_Lp                         # pyright: ignore
+    METRIC_Canberra = faiss.METRIC_Canberra             # pyright: ignore
+    METRIC_BrayCurtis = faiss.METRIC_BrayCurtis         # pyright: ignore
+    METRIC_JensenShannon = faiss.METRIC_JensenShannon   # pyright: ignore
 
 
 class FaissIndex(object):
@@ -63,7 +69,8 @@ class FaissIndex(object):
         embeddings = embeddings.astype('float32')
         if not self.index.is_trained:
             self.index.train(embeddings)
-        self.index.add(embeddings)
+        else:
+            self.index.add(embeddings)
 
         print(f'Total data indexed {len(self.index_id_to_db_id)}')
 

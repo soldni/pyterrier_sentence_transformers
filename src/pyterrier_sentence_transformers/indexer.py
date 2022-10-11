@@ -1,3 +1,4 @@
+from functools import cached_property
 from pathlib import Path
 import shutil
 from typing import Any, Iterable
@@ -37,6 +38,13 @@ class SentenceTransformersIndexer(SentenceTransformersBase):
         for i in range(num_chunks):
             yield docs[i * chunk_size : (i+1) * chunk_size]
 
+    @cached_property
+    def sep_token(self) -> str:
+        sep_token = getattr(self.model.tokenizer, "sep_token")
+        if sep_token is None:
+            raise ValueError('No sep_token found in tokenizer')
+        return str(sep_token)
+
     def index(self, docs):
         # make sure input path exists
         path = Path(self.config.index_path)
@@ -52,9 +60,16 @@ class SentenceTransformersIndexer(SentenceTransformersBase):
         docs_it = self.make_segments(docs)
 
         for _, contents in enumerate(docs_it):
-            passage_embedding = self.encode(
-                texts=contents[self.config.text_attr].to_list(),
-            )
+
+            # this is all the text fields we want to index
+            text_contents = contents[self.config.text_attr].apply(
+                # join using sep_token
+                lambda row: f' {self.sep_token} '.join(row.values.astype(str)),
+                # join along columns
+                axis=1
+            ).to_list()
+
+            passage_embedding = self.encode(texts=text_contents)
 
             self.faiss_index.index_data(
                 ids=[str(e) for e in contents[self.config.docno_attr]],

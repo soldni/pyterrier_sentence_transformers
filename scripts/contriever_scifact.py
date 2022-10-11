@@ -1,4 +1,5 @@
 from pathlib import Path
+import shutil
 from typing import Optional
 import platformdirs
 import pyterrier as pt
@@ -28,9 +29,13 @@ class SentenceTransformerConfigWithDefaults(SentenceTransformerConfig):
 @sp.cli(SentenceTransformerConfigWithDefaults)
 def main(config: SentenceTransformerConfigWithDefaults):
     dataset = pt.get_dataset(f'irds:{DATASET}')
+
     index_root = Path(
         platformdirs.user_cache_dir('pyterrier_sentence_transformers')
     ) / DATASET.replace('/', '_')
+
+    if index_root.exists():
+        shutil.rmtree(index_root)
 
     # This is the neural indexer with sentence-transformers
     neu_index_path = index_root / NEU_MODEL_NAME.replace('/', '_')
@@ -40,17 +45,22 @@ def main(config: SentenceTransformerConfigWithDefaults):
         index_path=str(neu_index_path),
         overwrite=True,
         normalize=False,
-        config=sp.to_dict(config)
+        config=sp.to_dict(config),
+        text_attr=['title', 'text']
     )
     indexer.index(dataset.get_corpus_iter())
 
     # This is a classic statistical indexer
     sta_index_path = index_root / STA_MODEL_NAME
+    sta_index_path.mkdir(parents=True, exist_ok=True)
     if not (sta_index_path / 'data.properties').exists():
         indexer = pt.IterDictIndexer(
             index_path=str(sta_index_path), blocks=True
         )
-        indexref = indexer.index(dataset.get_corpus_iter())
+        indexref = indexer.index(
+            dataset.get_corpus_iter(),
+            fields=['title', 'text']
+        )
         index = pt.IndexFactory.of(indexref)
     else:
         index = pt.IndexFactory.of(str(sta_index_path))
@@ -65,6 +75,8 @@ def main(config: SentenceTransformerConfigWithDefaults):
     # run the experiement
     exp = pt.Experiment(
         [sta_retr, neu_retr],
+        # queries,
+        # qrels,
         dataset.get_topics(),
         dataset.get_qrels(),
         names=[STA_MODEL_NAME, NEU_MODEL_NAME],

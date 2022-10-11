@@ -1,6 +1,6 @@
 [project]
 name = "pyterrier_sentence_transformers"
-version = "0.1.1"
+version = "0.2.0"
 description = "Create an pyterrier index using any sentence-transformers model"
 authors = [
     {name = "Luca Soldaini", email = "luca@soldaini.net" },
@@ -33,6 +33,7 @@ requires = [
 [project.optional-dependencies]
 dev = [
     "black>=22.6.0",
+    "springs>=1.4.5",
     "isort>=5.10.1",
     "mypy>=0.971",
     "pytest>=5.2",
