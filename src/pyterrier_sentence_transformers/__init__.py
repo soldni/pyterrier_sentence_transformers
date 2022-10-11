@@ -1,9 +1,9 @@
-from .indexer import (
-    SentenceTransformersIndexer,
-    SentenceTransformerIndexerConfig
-)
+from .indexer import SentenceTransformersIndexer
+from .base import SentenceTransformerConfig
+from .retriever import SentenceTransformersRetriever
 
 __all__ = [
     "SentenceTransformersIndexer",
-    "SentenceTransformerIndexerConfig"
+    "SentenceTransformerConfig",
+    "SentenceTransformersRetriever"
 ]

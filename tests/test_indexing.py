@@ -1,31 +1,14 @@
 import unittest
-import pandas as pd
 import tempfile
 
 
 class TestIndexing(unittest.TestCase):
-    def test_indexing_one_doc(self):
-        import pyterrier as pt
-        from pyterrier_sentence_transformers import SentenceTransformersIndexer
-
-        self.tearDown()
-        self.setUp()
-
-        indexer = SentenceTransformersIndexer(
-            model_name_or_path="all-MiniLM-L6-v2",
-            index_path=self.test_dir
-        )
-        df = pd.DataFrame({"docno": [1], "text": ["This is a test"]})
-        indexref = indexer.index(df)
-        index = pt.IndexFactory.of(indexref)
-        assert index.getCollectionStatistics().getNumberOfDocuments() == 1
-
     def test_indexing_vaswani(self):
 
         from pyterrier.datasets import get_dataset
         from pyterrier_sentence_transformers import (
             SentenceTransformersIndexer,
-            SentenceTransformersRetrieval
+            SentenceTransformersRetriever
         )
 
         self.tearDown()
@@ -36,11 +19,11 @@ class TestIndexing(unittest.TestCase):
             index_path=self.test_dir
         )
 
-        iter = get_dataset("vaswani").get_corpus_iter()
-        ref = indexer.index([ next(iter) for i in range(200) ])
-        ret = SentenceTransformersRetrieval(
+        corpus_iter = get_dataset("vaswani").get_corpus_iter()
+        ref = indexer.index([next(corpus_iter) for i in range(200)])
+        ret = SentenceTransformersRetriever(
             model_name_or_path="all-MiniLM-L6-v2",
-            indexref=ref
+            index_path=ref
         )
 
         dfOut = ret.search("chemical reactions")
@@ -56,5 +39,5 @@ class TestIndexing(unittest.TestCase):
         import shutil
         try:
             shutil.rmtree(self.test_dir)
-        except:
+        except Exception:
             pass

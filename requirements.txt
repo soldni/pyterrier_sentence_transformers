@@ -3,4 +3,5 @@ pandas
 tensorboardX
 sentence-transformers>=2.2.2,<3.0.0
 transformers>=4.22.1,<5.0.0
-necessary
+necessary>=0.2.3
+trouting>=0.3.0
