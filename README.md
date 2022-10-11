@@ -7,13 +7,14 @@ If running faiss on CPU:
 
 ```bash
 pip install git+https://github.com/soldni/pyterrier_sentence_transformers.git
-conda install -c pytorch faiss-gpu cudatoolkit=11.3
+conda install -c pytorch faiss-cpu
 ```
+
 else, for gpu support:
 
 ```bash
 pip install git+https://github.com/soldni/pyterrier_sentence_transformers.git
-conda install -c pytorch faiss-cpu
+conda install -c pytorch faiss-gpu cudatoolkit=11.3
 ```
 
 If you need to install faiss from scratch, see [instructions here][1].
