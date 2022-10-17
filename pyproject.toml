@@ -1,6 +1,6 @@
 [project]
 name = "pyterrier_sentence_transformers"
-version = "0.2.0"
+version = "0.2.1"
 description = "Create an pyterrier index using any sentence-transformers model"
 authors = [
     {name = "Luca Soldaini", email = "luca@soldaini.net" },
@@ -8,10 +8,16 @@ authors = [
 license = {text = "Apache-2.0"}
 readme = "README.md"
 requires-python = ">=3.8"
-dynamic = ["dependencies"]
+dependencies = [
+    "pandas",
+    "tensorboardX",
+    "sentence-transformers>=2.2.2,<3.0.0",
+    "transformers>=4.22.1,<5.0.0",
+    "necessary>=0.2.3",
+    "trouting>=0.3.0",
+    "platformdirs>=2.5.0",
+]
 
-[tool.setuptools.dynamic]
-dependencies = {file = ["requirements.txt"]}
 
 [project.urls]
 "Homepage" = "https://github.com/soldni/pyterrier_sentence_transformers"
