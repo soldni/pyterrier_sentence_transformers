@@ -1,0 +1,18 @@
+cff-version: 1.2.0
+title: PyTerrier Sentence Transformers
+message: >-
+  If you use this software, please cite it using the
+  metadata from this file.
+type: software
+authors:
+  - given-names: Luca
+    family-names: Soldaini
+    affiliation: Allen Institute for AI
+    orcid: 'https://orcid.org/0000-0001-6998-9863'
+repository-code: >-
+  https://github.com/soldni/pyterrier_sentence_transformers
+abstract: >-
+  A codebase derived on terrierteam/pyterrier_ance
+  that allows encoding using any
+  sentence_transformers model.
+license: Apache-2.0
