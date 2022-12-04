@@ -16,3 +16,4 @@ abstract: >-
   that allows encoding using any
   sentence_transformers model.
 license: Apache-2.0
+date-released: '2022-10-11'
