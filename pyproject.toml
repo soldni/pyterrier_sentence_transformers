@@ -1,5 +1,5 @@
 [project]
-name = "pyterrier_sentence_transformers"
+name = "pyterrier-sentence-transformers"
 version = "0.2.2"
 description = "Create an pyterrier index using any sentence-transformers model"
 authors = [

@@ -133,4 +133,4 @@ dmypy.json
 .vscode
 
 # cloned faiss repo
-faiss
+faiss/
