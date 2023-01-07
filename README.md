@@ -22,7 +22,7 @@ If you need to install faiss from scratch, see [instructions here][1].
 
 ## Running
 
-See example in `scripts/contriever_scifact.py`.
+See example in `examples/contriever_scifact.py`.
 
 ```bash
                           name       map  recip_rank      P.10  ndcg_cut.10

@@ -20,8 +20,19 @@ NEU_MODEL_NAME = 'facebook/contriever-msmarco'
 STA_MODEL_NAME = 'BM25'
 
 
-def main():
+class StripMarkup():
+    # following https://github.com/terrier-org/pyterrier/issues/253
 
+    def __init__(self):
+        self.tokenizer = pt.autoclass(
+            "org.terrier.indexing.tokenisation.Tokeniser"
+        ).getTokeniser()
+
+    def __call__(self, text):
+        return " ".join(self.tokenizer.getTokens(text))
+
+
+def main():
     # fixed keys: docno, qid, doc_id, query, relevance
 
     corpus = [
@@ -36,8 +47,7 @@ def main():
 
     topics = pd.DataFrame.from_records([
         {'qid': 'en32fo', 'query': 'The Lake of Dreams by Kim Edwards'},
-        # {'qid': 'j1doae', 'query': "The Lavender House: A Dystopian Children's Story"}
-        {'qid': 'j1doae', 'query': "The Lavender House A Dystopian Children s Story"}
+        {'qid': 'j1doae', 'query': "The Lavender House: A Dystopian Children's Story"}
     ])
 
     qrels = pd.DataFrame.from_records([
@@ -69,7 +79,9 @@ def main():
     sta_index_path.mkdir(parents=True, exist_ok=True)
     if not (sta_index_path / 'data.properties').exists():
         indexer = pt.IterDictIndexer(
-            index_path=str(sta_index_path), blocks=True
+            index_path=str(sta_index_path),
+            blocks=True,
+            tokeniser="UTFTokeniser"
         )
         indexref = indexer.index(corpus, fields=['text'])
         index = pt.IndexFactory.of(indexref)
@@ -85,7 +97,10 @@ def main():
 
     sta_retr = pt.BatchRetrieve(index, wmodel=STA_MODEL_NAME)
 
-    # run the experiement
+    markup_stripper = StripMarkup()
+    topics = pt.apply.query(lambda r: markup_stripper(r.query))(topics)
+
+    # run the experiment
     exp = pt.Experiment(
         [sta_retr, neu_retr],
         topics,
